@@ -11,6 +11,9 @@ int main()
 	Print_Full_List(elem);
 	printf("Element:%d.\nIndex:%d.\n", elem->next->data, Calculate_Index(elem->next));
 	printf("%p\n", elem);
+	//elem->next = (Node*)12302130;
+	//Insert_Before(elem, 666);
+	//Print_Full_List(elem);
 	Delete_List(&elem);
 	Print_Full_List(elem);
 	printf("%p\n", elem);

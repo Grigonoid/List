@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 const int ERROR = -1;
+const int OK = 1;
 const int CAN1 = 666;
 const int CAN2 = 999;
 
@@ -10,6 +11,7 @@ struct Node
 	int data;
 	Node* next;
 	Node* prev;
+	unsigned checksum;
 	int can2;
 };
 
@@ -23,6 +25,8 @@ int Print_Full_List (Node* cur);
 int Print_List_From_Cur (Node* cur);
 int Calculate_Index (Node* cur);
 Node* Search (Node* cur, int data);
+void Calculate_Checksum (Node* cur);
+unsigned Return_Checksum (Node* cur);
 
 #include "list_funcs.cpp"
 

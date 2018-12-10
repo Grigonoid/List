@@ -2,7 +2,7 @@ Node* Create_Node (int data)
 {
 	Node* new_node = new Node;
 	if (new_node == NULL) {
-		printf("Cannot create node.\n");
+		printf("Узел не может быть создан.\n");
 		return NULL;
 	}
 	new_node->data = data;
@@ -10,6 +10,7 @@ Node* Create_Node (int data)
 	new_node->prev = NULL;
 	new_node->can1 = CAN1;
 	new_node->can2 = CAN2;
+	Calculate_Checksum(new_node);
 	return new_node;
 }
 
@@ -21,8 +22,14 @@ int Insert_After (Node* cur, int data)
 	node_after->next = cur->next;
 	node_after->prev = cur;
 	cur->next = node_after;
-	if (node_after->next)
+	Calculate_Checksum(node_after);
+	Calculate_Checksum(cur);
+	if (node_after->next) {
 		node_after->next->prev = node_after;
+		Calculate_Checksum(node_after->next);
+	}
+	if (Ok(node_after) == ERROR) return ERROR;
+	return OK;
 }
 
 int Insert_Before (Node* cur, int data)
@@ -33,31 +40,30 @@ int Insert_Before (Node* cur, int data)
 	node_before->next = cur;
 	node_before->prev = cur->prev;
 	cur->prev = node_before;
-	if (node_before->prev)
+	Calculate_Checksum(node_before);
+	Calculate_Checksum(cur);
+	if (node_before->prev) {
 		node_before->prev->next = node_before;
+		Calculate_Checksum(node_before->prev);
+	}
+	if (Ok(node_before) == ERROR) return ERROR;
+	return OK;
 }
 
 int Delete_Node (Node* cur)
 {
 	if (Ok(cur) == ERROR) return ERROR;
-	if (cur->next)
+	if (cur->next) {
 		cur->next->prev = cur->prev;
-	if (cur->prev)
+		Calculate_Checksum(cur->next);
+	}
+	if (cur->prev) {
 		cur->prev->next = cur->next;
+		Calculate_Checksum(cur->prev);
+	}
 	delete cur;
 	cur->next = NULL;
-}
-
-int Ok (Node* cur)
-{
-	if (cur == NULL) {
-		printf("Invalid pointer.\n");
-		return ERROR;
-	}
-	if (cur->can1 != CAN1 || cur->can2 != CAN2) {
-		printf("Node structure is broken.\n");
-		return ERROR;
-	}
+	return OK;
 }
 
 int Delete_List (Node** cur)
@@ -71,6 +77,7 @@ int Delete_List (Node** cur)
 	}
 	delete *cur;
 	*cur = NULL;
+	return OK;
 }
 
 int Print_Full_List (Node* cur)
@@ -83,6 +90,7 @@ int Print_Full_List (Node* cur)
 		cur = cur->next;
 	}
 	printf("%d\n", cur->data);
+	return OK;
 }
 
 int Print_List_From_Cur (Node* cur)
@@ -93,6 +101,7 @@ int Print_List_From_Cur (Node* cur)
 		cur = cur->next;
 	}
 	printf("%d\n", cur->data);
+	return OK;
 }
 
 int Calculate_Index (Node* cur)
@@ -109,7 +118,7 @@ int Calculate_Index (Node* cur)
 Node* Search (Node* cur, int data_to_find)
 {
 	if (Ok(cur) == ERROR) return NULL;
-	Node * temp = cur;
+	Node* temp = cur;
 	if (cur->data == data_to_find) 
 		return cur;
 	while (cur->prev != NULL) {
@@ -124,4 +133,33 @@ Node* Search (Node* cur, int data_to_find)
 	}
 	return NULL;
 }
+
+int Ok (Node* cur)
+{
+	if (cur == NULL) {
+		printf("Обращение по нулевому указателю.\n");
+		return ERROR;
+	}
+	if (cur->can1 != CAN1 || cur->can2 != CAN2) {
+		printf("Нарушена структура узла.\n");
+		return ERROR;
+	}
+	if (cur->checksum != Return_Checksum(cur)) {
+		printf("Несанкционированное изменение указателей.\n");
+		return ERROR;
+	}
+	return OK;
+}
+
+void Calculate_Checksum (Node* cur)
+{
+	cur->checksum = ((unsigned long long)(cur->prev)*322 + (unsigned long long)(cur->next)*228) % 13337;
+}
+
+unsigned Return_Checksum (Node* cur)
+{
+	return ((unsigned long long)(cur->prev)*322 + (unsigned long long)(cur->next)*228) % 13337;
+}
+
+
 
